@@ -35,19 +35,6 @@ namespace BTCN_Blockchain.Controllers
             blockChain.MineBlock(minerAddress);
         }
 
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
         public ActionResult Index()
         {
             // Index sẽ là nơi vào đầu tiên
@@ -91,6 +78,134 @@ namespace BTCN_Blockchain.Controllers
 
                 return View("Index");
             }
+        }
+
+        public ActionResult Account()
+        {
+            if (acc == "")
+            {
+                ViewBag.Acc = acc;
+                ViewBag.Money = 0;
+
+                return View("Account");
+            }
+            else
+            {
+                ViewBag.Acc = acc;
+                ViewBag.Money = blockChain.GetBalance(acc);
+
+                return View("Account");
+            }
+        }
+
+        public ActionResult Transfer()
+        {
+            ViewBag.Acc = acc;
+            ViewBag.status = "";
+
+            return View("Transfer");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult TransferClick(WalletTransactions walltrans)
+        {
+            if (!walletList.Contains(walltrans.walletname))
+            {
+                ViewBag.Acc = acc;
+                ViewBag.status = "Ví đích không tồn tại!";
+
+                return View("Transfer");
+            }
+            else
+            {
+                var mon = int.Parse(walltrans.money);
+                var balance = blockChain.GetBalance(acc);
+
+                if (balance <= mon)
+                {
+                    ViewBag.Acc = acc;
+                    ViewBag.status = "Số tiền chuyển không thể vượt quá số tiền trong ví" + " (" + balance.ToString() + " VCOIN) !";
+
+                    return View("Transfer");
+                }
+                else
+                {
+                    blockChain.CreateTransaction(new Transactions(acc, walltrans.walletname, mon));
+                    blockChain.MineBlock(minerAddress);
+
+                    ViewBag.AllChainContent = blockChain.GetHomeInfor();
+
+                    return View("Index");
+                }
+            }
+        }
+
+
+        public ActionResult History()
+        {
+            ViewBag.AllTransaction = blockChain.GetChainTransaction();
+
+            return View("History");
+        }
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Ví điện tử demo";
+
+            return View("About");
+        }
+
+        public ActionResult Login()
+        {
+            ViewBag.Acc = acc;
+            ViewBag.status = "";
+
+            return View("Login");
+        }
+
+        // post, check login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CheckLogin(User _user)
+        {
+            if (walletList.Contains(_user.username))
+            {
+                var idx = walletList.IndexOf(_user.username);
+                var pass = passwordList[idx];
+
+                if (_user.password == pass)
+                {
+                    acc = _user.username;
+
+                    ViewBag.AllChainContent = blockChain.GetHomeInfor();
+
+                    return View("Index");
+                }
+                else
+                {
+                    ViewBag.Acc = acc;
+                    ViewBag.status = "Sai mật khẩu";
+                    return View("Login");
+                }
+            }
+            else
+            {
+                ViewBag.Acc = acc;
+                ViewBag.status = "Sai tên đăng nhập";
+
+                return View("Login");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Logout()
+        {
+            acc = "";
+            ViewBag.Acc = acc;
+            ViewBag.status = "";
+            return View("Login");
         }
     }
 }
