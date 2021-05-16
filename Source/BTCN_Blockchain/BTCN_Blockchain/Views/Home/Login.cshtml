@@ -7,7 +7,7 @@
 
 @if (ViewBag.Acc != "")
 {
-    <p style="color:red;">Bạn đã đăng nhập!</p>
+    <p style="color:green;">Bạn đã đăng nhập!</p>
     using (@Html.BeginForm("Logout", "Home", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
@@ -37,6 +37,7 @@ else
             <input type="checkbox" class="form-check-input" id="exampleCheck1">
             <label class="form-check-label" for="exampleCheck1">Nhớ tên đăng nhập</label>
         </div>
+        <br />
         <button type="submit" class="btn btn-primary">Đăng nhập</button>
     }
 }
